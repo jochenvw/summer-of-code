@@ -1,0 +1,27 @@
+name: Update Challenge Progress
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-progress:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Count completed checkboxes
+        id: count
+        run: |
+          DONE=$(grep -o "\[x\]" README.md | wc -l)
+          TOTAL=$(grep -o "\[.\]" README.md | wc -l)
+          echo "done=$DONE" >> $GITHUB_OUTPUT
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+
+      - name: Update progress badge
+        run: |
+          curl -X POST "https://img.shields.io/endpoint" \
+            -H "Content-Type: application/json" \
+            -d "{\"schemaVersion\":1,\"label\":\"Done\",\"message\":\"${{ steps.count.outputs.done }}/${{ steps.count.outputs.total }}\",\"color\":\"brightgreen\"}"
